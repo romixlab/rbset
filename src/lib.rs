@@ -5,6 +5,7 @@ use std::{
 
 use num_traits::Num;
 
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct RBSet<T> {
     // [start, end]
     ranges: Vec<(T, T)>,
@@ -104,6 +105,14 @@ impl<T: Num + PartialOrd + AddAssign + SubAssign + Copy> RBSet<T> {
         false
     }
 
+    pub fn iter(&self) -> RBSetIter<T> {
+        RBSetIter {
+            set: self,
+            pos: 0,
+            last_yielded: None,
+        }
+    }
+
     pub fn ranges(&self) -> &[(T, T)] {
         &self.ranges
     }
@@ -121,6 +130,43 @@ impl<T: Display> Display for RBSet<T> {
             write!(f, "{}..={} ", range.0, range.1)?;
         }
         writeln!(f)
+    }
+}
+
+pub struct RBSetIter<'i, T> {
+    set: &'i RBSet<T>,
+    pos: usize,
+    last_yielded: Option<T>,
+}
+
+impl<'i, T: Num + AddAssign + PartialOrd + Copy> Iterator for RBSetIter<'i, T> {
+    type Item = T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.pos >= self.set.ranges.len() {
+            None
+        } else {
+            match &mut self.last_yielded {
+                Some(x) => {
+                    if *x == self.set.ranges[self.pos].1 {
+                        self.pos += 1;
+                        if self.pos < self.set.ranges.len() {
+                            *x = self.set.ranges[self.pos].0;
+                            Some(*x)
+                        } else {
+                            None
+                        }
+                    } else {
+                        *x += T::one();
+                        Some(*x)
+                    }
+                }
+                None => {
+                    self.last_yielded = Some(self.set.ranges[0].0);
+                    self.last_yielded
+                }
+            }
+        }
     }
 }
 
@@ -153,5 +199,33 @@ mod tests {
         assert_eq!(set.ranges[0], (0, 3));
         assert_eq!(set.ranges[1], (7, 8));
         assert_eq!(set.ranges[2], (10, 10));
+    }
+
+    #[test]
+    fn iter_empty() {
+        let set = RBSet::<u32>::new();
+        let mut iter = set.iter();
+        assert!(iter.next().is_none());
+    }
+
+    #[test]
+    fn iter() {
+        let mut set = RBSet::<u32>::new();
+        set.insert(0);
+        set.insert(1);
+        set.insert(2);
+        set.insert(3);
+        set.insert(7);
+        set.insert(8);
+        set.insert(10);
+        let mut iter = set.iter();
+        assert_eq!(iter.next(), Some(0));
+        assert_eq!(iter.next(), Some(1));
+        assert_eq!(iter.next(), Some(2));
+        assert_eq!(iter.next(), Some(3));
+        assert_eq!(iter.next(), Some(7));
+        assert_eq!(iter.next(), Some(8));
+        assert_eq!(iter.next(), Some(10));
+        assert!(iter.next().is_none());
     }
 }

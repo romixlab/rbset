@@ -6,3 +6,9 @@ edition = "2021"
 [dependencies.num-traits]
 version = "0.2"
 default-features = false
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+
+# [features]
+# serde = ["dep:serde"]
