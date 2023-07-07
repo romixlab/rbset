@@ -1,9 +1,9 @@
 use std::{
     fmt::Display,
-    ops::{AddAssign, SubAssign},
+    ops::{AddAssign, SubAssign}
 };
 
-use num_traits::Num;
+use num_traits::{Num, ToPrimitive};
 
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct RBSet<T> {
@@ -11,7 +11,7 @@ pub struct RBSet<T> {
     ranges: Vec<(T, T)>,
 }
 
-impl<T: Num + PartialOrd + AddAssign + SubAssign + Copy> RBSet<T> {
+impl<T: Num + PartialOrd + AddAssign + SubAssign + Copy + ToPrimitive> RBSet<T> {
     pub fn new() -> Self {
         RBSet { ranges: Vec::new() }
     }
@@ -117,6 +117,16 @@ impl<T: Num + PartialOrd + AddAssign + SubAssign + Copy> RBSet<T> {
         }
     }
 
+    pub fn len(&self) -> usize {
+        // self.iter().count()
+        let mut count = 0;
+        for (start, end) in &self.ranges {
+            let diff = *end - *start + T::one();
+            count += diff.to_usize().unwrap();
+        }
+        count
+    }
+
     pub fn ranges(&self) -> &[(T, T)] {
         &self.ranges
     }
@@ -133,7 +143,7 @@ impl<T: Display> Display for RBSet<T> {
         for range in self.ranges.iter() {
             write!(f, "{}..={} ", range.0, range.1)?;
         }
-        writeln!(f)
+        Ok(())
     }
 }
 

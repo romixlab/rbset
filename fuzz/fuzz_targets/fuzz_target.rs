@@ -39,6 +39,7 @@ fuzz_target!(|actions: Vec<Action>| {
                     print_actions(&actions);
                     panic!("Check at step: {idx} for {value} failed");
                 }
+                assert_eq!(set.len(), hash_set.len());
             }
             Action::CheckOrder => {
                 // println!("{action}");
