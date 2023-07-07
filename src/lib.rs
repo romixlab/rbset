@@ -96,6 +96,10 @@ impl<T: Num + PartialOrd + AddAssign + SubAssign + Copy> RBSet<T> {
         self.ranges.clear();
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.ranges.is_empty()
+    }
+
     pub fn contains(&self, value: &T) -> bool {
         for (start, end) in &self.ranges {
             if *value >= *start && *value <= *end {
