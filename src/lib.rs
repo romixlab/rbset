@@ -1,11 +1,11 @@
 use std::{
     fmt::Display,
-    ops::{AddAssign, SubAssign}
+    ops::{AddAssign, SubAssign},
 };
 
 use num_traits::{Num, ToPrimitive};
 
-#[derive(serde::Serialize, serde::Deserialize)]
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
 pub struct RBSet<T> {
     // [start, end]
     ranges: Vec<(T, T)>,
