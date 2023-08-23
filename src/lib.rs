@@ -5,7 +5,7 @@ use std::{
 
 use num_traits::{Num, ToPrimitive};
 
-#[derive(serde::Serialize, serde::Deserialize, Debug)]
+#[derive(Clone, serde::Serialize, serde::Deserialize, Debug)]
 pub struct RBSet<T> {
     // [start, end]
     ranges: Vec<(T, T)>,
